@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 function MaintainProducts() {
     const [products, setProducts] = useState([]);
+    const [message, setMessage] = useState("");
 
     useEffect(() => {
         fetch("http://localhost:8080/products")
@@ -13,7 +14,22 @@ function MaintainProducts() {
     const deleteProduct = (productId) => {
         fetch("http://localhost:8080/delete-product/" + productId, {method: "DELETE"})
         .then(res => res.json())
-        .then(json => setProducts(json))
+        .then(json =>  {       
+            if(json.error) {
+            switch(json.message) {
+                case "PRODUCT_IS_IN_USE":
+                    fetch("http://localhost:8080/orders-by-product/" + productId)
+                        .then(res => res.json())
+                        .then(json => setMessage("Kustutatav toode on järgmiste ID-dega tellimusstes kasutusel: " + json));
+                    break;
+                default:
+                    setMessage("Tundmatu viga")
+            }
+        } else {
+            setMessage("Kustutamine õnnestus");
+            setProducts(json);
+        }
+    })
     }
 
     const decreaseQuantity = (product) => {
@@ -36,9 +52,9 @@ function MaintainProducts() {
     }
 
 
-
     return ( 
         <div>
+            <div>{message}</div>
             {products.map(element => 
                 <div className={ element.active ? "active" : "inactive" } key={element.id}>
                     <img src={element.image} alt="" />

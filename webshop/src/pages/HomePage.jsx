@@ -8,7 +8,7 @@ function HomePage() {
 
     //uef
     useEffect(() => {
-        fetch("http://localhost:8080/products")
+        fetch("http://localhost:8080/active-products")
             .then(res => res.json())
             .then(json => setProducts(json))
     }, []);

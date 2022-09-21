@@ -46,7 +46,7 @@ function AddProduct() {
             <input ref={imageRef} type="text" /> <br />
             <label>Kategooria</label> <br/>
             {/*<input ref={categoryRef} type="text" /> <br />*/}
-            <select>
+            <select ref= {categoryRef}>
                 { categories.map( category => 
                     <option key = {category.id} value={category.id}>
                         {category.name}

@@ -1,18 +1,69 @@
-import { useState } from "react";
+import { useState, useRef, useEffect  } from "react";
 import { useParams } from "react-router-dom";
 
 function EditProduct() {
-    const { id } =useParams();
-    const [product, setProducts] = useState({});
+    //use algavad on Reacti HOOKid, tähistab Reacti erikoodi
+    const { id } = useParams();
+    const nameRef = useRef();
+    const priceRef = useRef();
+    const imageRef = useRef();
+    const categoryRef = useRef(); 
+    const activeRef = useRef(); 
+    const [categories, setCategories] = useState([]);
+    const [product, setProduct] = useState(null);
 
-    //useEffect -->päring küsi üks toode
 
-    //label /input
+    useEffect(()  => {
+        fetch("http://localhost:8080/category")
+        .then(res => res.json())
+        .then(json => {
+            setCategories(json);
+            fetch("http://localhost:8080/get-product/" + id)
+                .then(res => res.json())
+                .then(json => setProduct(json))
+        })
+    }, [id]);
 
-    //get ja edit product
+    const updateProduct = () => {
+        //nagu Postmanis saadan objekti
+        const newProduct = {
+            "id": id,
+            "name": nameRef.current.value,
+            "price": priceRef.current.value,
+            "image": imageRef.current.value,
+            "active": activeRef.current.checked,
+            "category": {
+                "id": categoryRef.current.value
+            }
+        }
+        fetch("http://localhost:8080/edit-product/" + id, {
+            method: "PUT",
+            body: JSON.stringify(newProduct),
+            headers: {"Content-Type": "application/json"}
+        })
+    }
 
-    return ( <div>EP {id}
-    <input defaultValue={product.name} type = "text" />
+if (product === null) {
+    return (<div> Loading... </div>)
+}
+
+    return ( 
+        <div>EP {id} <br />
+            <label>Nimi</label> <br/>
+            <input ref ={nameRef} defaultValue={product.name} type = "text" /> <br />
+            <label>Hind</label> <br/>
+            <input ref ={priceRef} defaultValue={product.price} type="number" /> <br />
+            <label>Pilt</label> <br/>
+            <input ref ={imageRef} defaultValue={product.image} type="text" /> <br />
+            <label>Kategooria</label> <br/>
+            <select ref ={categoryRef} defaultValue={product.category?.id || "default"}>
+                <option value = "default" disabled>Tootel pole ühtegi kategooriait</option>
+                { categories.map( category => 
+                    <option key = {category.id} value={category.id} > {category.id} {category.name} </option>)}
+                </select> <br />
+            <label>Aktiivne</label> <br/>
+            <input ref ={activeRef} defaultChecked={product.active} type = "checkbox" /> <br />
+            <button onClick={updateProduct}>Muuda toodet</button> <br />
     </div> );
 }
 
